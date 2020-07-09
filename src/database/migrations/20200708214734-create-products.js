@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.createTable('users', 
+    return queryInterface.createTable('products', 
         { 
             id: {
                 type: Sequelize.INTEGER,
@@ -14,14 +14,20 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            password_hash: {
+            description: {
+                type: Sequelize.STRING,
+            },
+            category: {
                 type: Sequelize.STRING,
                 allowNull: false
             },
-            email: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                unique: true
+            price: {
+                type: Sequelize.FLOAT,
+                allowNull: false
+            },
+            stock: {
+                type: Sequelize.INTEGER,
+                defaultValue: 0
             },
             created_at: {
                 type: Sequelize.DATE,
@@ -33,12 +39,10 @@ module.exports = {
             }
         }
     );
-
   },
 
   down: async (queryInterface, Sequelize) => {
-
-    return queryInterface.dropTable('users');
-
+    
+    return queryInterface.dropTable('products');
   }
 };

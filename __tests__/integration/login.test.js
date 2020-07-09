@@ -1,11 +1,11 @@
 const request = require('supertest');
-
+const {Session} = require("../../src/app/models")
 const app = require("../../src/app")
 const factory = require("../factories")
 
 const truncate = require("../utils/truncate");
 
-describe('Authentication' , () =>{
+describe('Login' , () =>{
     beforeEach( async () => {
         await truncate();
     })
@@ -15,7 +15,7 @@ describe('Authentication' , () =>{
         })
 
         const response = await request(app)
-        .post('/sessions')
+        .post('/login')
         .send({
             email : user.email,
             password: "adopets"
@@ -29,7 +29,7 @@ describe('Authentication' , () =>{
         })
 
         const response = await request(app)
-        .post('/sessions')
+        .post('/login')
         .send({
             email : user.email,
             password: "123455"
@@ -43,43 +43,28 @@ describe('Authentication' , () =>{
         })
 
         const response = await request(app)
-        .post('/sessions')
+        .post('/login')
         .send({
             email : user.email,
             password: "adopets"
         })
         expect(response.body).toHaveProperty("token");
     })
-
-    it("Should be able to access private routes with JWT token" , async () => {
+    it("Should logout when authenticated" , async ()=>{
         const user = await factory.create("User", {
             password: "adopets"
         })
 
+        const userToken =  `${user.generateToken()}`;
+        const session = await Session.create({
+            user_id : user.id,
+            token : userToken
+        })
         const response = await request(app)
-        .get('/products')
-        .set('Authorization' , `Bearer ${user.generateToken()}`)
+        .post('/logout')
+        .send({
+            user_id : user.id,
+        })
         expect(response.status).toBe(200);
-    })
-
-    it("Should not be able to access private routes without JWT token" , async () => {
-        const user = await factory.create("User", {
-            password: "adopets"
-        })
-
-        const response = await request(app)
-        .get('/products');
-        expect(response.status).toBe(401);
-    })
-
-    it("Should not be able to access private routes with invalid JWT token" , async () => {
-        const user = await factory.create("User", {
-            password: "adopets"
-        })
-
-        const response = await request(app)
-        .get('/products')
-        .set('Authorization' , `Bearer 123467`);
-        expect(response.status).toBe(401);
     })
 })

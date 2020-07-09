@@ -1,6 +1,6 @@
-const { username } = require("../../config/database")
-const bcrypt = require('bcryptjs')
-const jwt = require("jsonwebtoken")
+const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
+const { seq } = require('factory-girl');
 
 module.exports = (sequelize, DataTypes) =>{
     const User = sequelize.define("User" , {
@@ -16,7 +16,13 @@ module.exports = (sequelize, DataTypes) =>{
                 }
             }
         }
-    })
+    });
+    User.associate = function(models) {
+        User.belongsTo(models.Session, {
+            foreignKey: 'id',
+            onDelete: 'CASCADE'
+        })
+    };
 
     User.prototype.checkPassword = function(password){
         return bcrypt.compare(password , this.password_hash);
@@ -24,5 +30,6 @@ module.exports = (sequelize, DataTypes) =>{
     User.prototype.generateToken = function (){
         return jwt.sign({id: this.id} , process.env.APP_SECRET)
     }
+    
     return User;
 };
